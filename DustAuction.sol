@@ -3,9 +3,9 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-//TODO: Add Events
 //TODO: Add token being accepted for offers
 //TODO: Cleanup variable names to be unique
+//TODO: Natspec
 
 contract DustAuction is ReentrancyGuard {
 
@@ -159,6 +159,18 @@ contract DustAuction is ReentrancyGuard {
         if (!transferSuccess) {revert TokenTransferFailed();}
 
         emit OfferCancelled(offerID);
+    }
+
+    // Returns the variables off an offer
+    function viewOffer(uint offerID) public view returns (address, address, uint, uint, uint, bool) {
+        return (
+            offers[offerID].seller,
+            offers[offerID].tokenSelling,
+            offers[offerID].tokenAmount,
+            offers[offerID].offerStartTime,
+            offers[offerID].timeline,
+            offers[offerID].offerOpen
+        );
     }
 
 }
