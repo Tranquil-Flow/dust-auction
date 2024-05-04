@@ -91,23 +91,23 @@ USDC
 
 ## CCIP Supported Deployments
 ### Ethereum Sepolia
-- DustAuction:
-- CrossChainBuyer:
+- DustAuction: `0xE679fD923B131F15FfE31AAE653504afeB2982A1`
+- CrossChainBuyer: `0x195756383785151Aa3E1850dAF2078f1790638D0`
 
 ### Base Sepolia Testnet
-- DustAuction:
-- CrossChainBuyer:
+- DustAuction: `0xc02dD2C46441627AD189D7f31F0D6Ca3121d856F`
+- CrossChainBuyer: `0xCe3a3A5AC2F132659B53a30945Cb804FAAE575A4`
 
 ### Avalanche Fuji Testnet
-- DustAuction:
-- CrossChainBuyer:
+- DustAuction: `0x095E71ef8d927db614c8B86029938555Da7a1EDf`
+- CrossChainBuyer: `0x5dc0112ba08B60f66796f61610ea23c7A3f12Ec5`
 
 ## Non-CCIP Supported Deployments
 ### Mantle Sepolia Testnet
-- DustAuction:
+- DustAuction: `0x9Ee6b0FD155FDE766e52B0A3cFC4B51cC95e77Ab`
 
 ### Polygon zkEVM Cardona Testnet
-- DustAuction:
+- DustAuction: `0xbCB715478a95E6157Ad395273477371424fF6b66`
 
 ## Acknowledgements
 [Marcus Wentz](https://github.com/MarcusWentz) for their mentoring & [Front End Template](https://github.com/MarcusWentz/Web3_Get_Set_Contract_Metamask)
