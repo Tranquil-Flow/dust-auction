@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-//TODO: Add token being accepted for offers
 //TODO: Cleanup variable names to be unique
 //TODO: Natspec
 
@@ -171,6 +170,10 @@ contract DustAuction is ReentrancyGuard {
             offers[offerID].timeline,
             offers[offerID].offerOpen
         );
+    }
+
+    function viewOffersLength() public view returns (uint) {
+        return offers.length;
     }
 
 }
