@@ -106,9 +106,6 @@ USDC
 ### Mantle Sepolia Testnet
 - DustAuction:
 
-### Avail Goldberg Testnet
-- DustAuction:
-
 ### Polygon zkEVM Cardona Testnet
 - DustAuction:
 

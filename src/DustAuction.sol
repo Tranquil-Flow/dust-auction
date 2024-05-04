@@ -168,19 +168,9 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
     // Given an input asset amount, returns the output amount of the other asset at current time.
     function getAmountOut(uint offerID, uint inputAmount) public returns (uint outAmount) {
         uint _timeline = offers[offerID].timeline;
-        // uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,_timeline,1,1),(10**27));
-        // uint step_2=pow_ratio(step_1,1,1,_timeline);
-        // return step_2;
-        return 123;
-    }
-
-    // Returns the input amount required to buy the given output asset amount at current time.
-    function getAmountIn(uint offerID, uint inputAmount) public returns (uint inAmount) {
-        uint _timeline = offers[offerID].timeline;
-        // uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,_timeline,1,1),(10**27));
-        // uint step_2=pow_ratio(step_1,1,1,_timeline);
-        // return step_2;
-        return 456;
+        uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,_timeline,1,1),(10**27));
+        uint step_2=pow_ratio(step_1,1,1,_timeline);
+        return step_2;
     }
 
     function acceptOfferPartial(
@@ -212,7 +202,7 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         if (offers[offerID].offerOpen == false) {revert OfferInvalid();}
 
         // Check the amount of tokens needed to buy the offer at current time
-        uint amountNeeded = getAmountIn(offerID, 0);  //TODO: FIX
+        uint amountNeeded = getAmountOut(offerID, 0);  //TODO: FIX
 
         // Close the offer
         offers[offerID].offerOpen = false;
@@ -251,7 +241,7 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         uint64 callerChain
     ) public nonReentrant {
         // Check the amount of tokens needed to buy the offer at current time
-        uint amountNeeded = getAmountIn(offerID, 0);  //TODO: FIX
+        uint amountNeeded = getAmountOut(offerID, 0);  //TODO: FIX
         
         // Check offer is valid & buyer has enough tokens, if not refund tokens to buyer
         if (offers[offerID].offerOpen == false || amountNeeded < buyAmount) {
