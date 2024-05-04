@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "./MathLibraryIntegral.sol";
+import "./dsmath.sol";
 
 contract AnalyticMath {
     uint8 internal constant MIN_PRECISION = 32;
@@ -27,6 +28,23 @@ contract AnalyticMath {
         initMaxExpArray();
     }
 
+   uint constant RAY = 10 ** 27;
+
+    function add(uint x, uint y) internal pure returns (uint z) {
+        require((z = x + y) >= x, "ds-math-add-overflow");
+    }
+    function mul(uint x, uint y) internal pure returns (uint z) {
+        require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
+    }
+    function rmul(uint x, uint y) public pure returns (uint z) {
+        z = add(mul(x, y), RAY / 2) / RAY;
+    }
+    function rdiv(uint x, uint y) public pure returns (uint z) {
+        z = add(mul(x, RAY), y / 2) / y;
+    }  
+
+
+
     /**
       * @dev Compute (a / b) ^ (c / d)
     */
@@ -39,7 +57,7 @@ contract AnalyticMath {
 
     function pow_ratio(uint256 a, uint256 b, uint256 c, uint256 d) public view returns (uint256) { unchecked {
         (uint256 p, uint256 q)=pow(a,b,c,d);
-        return ((p*1000000)/q);
+        return (rdiv(p,q);
     }}
 
     /**
