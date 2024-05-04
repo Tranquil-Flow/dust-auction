@@ -81,7 +81,7 @@ contract CrossChainBuyer is OwnerIsCreator {
     /// @param _token token address.
     /// @param _amount token amount.
     /// @return messageId The ID of the message that was sent.
-    function transferTokensPayLINK(
+    function acceptCrossChainOffer(
         uint64 _destinationChainSelector,
         address _receiver,
         uint _offerId,
