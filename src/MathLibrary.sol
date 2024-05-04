@@ -57,7 +57,7 @@ contract AnalyticMath {
 
     function pow_ratio(uint256 a, uint256 b, uint256 c, uint256 d) public view returns (uint256) { unchecked {
         (uint256 p, uint256 q)=pow(a,b,c,d);
-        return (rdiv(p,q);
+        return (rdiv(p,q));
     }}
 
     /**
