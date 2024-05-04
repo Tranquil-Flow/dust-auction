@@ -37,6 +37,11 @@ contract AnalyticMath {
         return (p, q);
     }}
 
+    function pow_ratio(uint256 a, uint256 b, uint256 c, uint256 d) public view returns (uint256) { unchecked {
+        (uint256 p, uint256 q)=pow(a,b,c,d);
+        return ((p*1000000)/q);
+    }}
+
     /**
       * @dev Compute log(a / b)
     */
