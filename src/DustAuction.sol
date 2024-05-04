@@ -166,9 +166,7 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
     }
 
     // Given an input asset amount, returns the output amount of the other asset at current time.
-<<<<<<< Updated upstream
     function getAmountOut(uint offerID, uint inputAmount,uint timeline) public returns (uint outAmount) {
-        
         uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
         uint step_2=pow_ratio(step_1,1,1,timeline);
         return step_2;
@@ -179,23 +177,6 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
         uint step_2=pow_ratio(step_1,1,1,timeline);
         return step_2;
-=======
-    function getAmountOut(uint offerID, uint inputAmount) public returns (uint outAmount) {
-
-        // uint step_1=200000-pow_ratio((100000+inputAmount),1,timeline,1,1);
-        // uint step_2=pow_ratio(step_1,1,1,timeline)-1;
-        // return step_2;
-        return 123;
-    }
-
-    // Returns the input amount required to buy the given output asset amount at current time.
-    function getAmountIn(uint offerID) public returns (uint inAmount) {
-        // uint step_1=200000-pow_ratio((100000+inputAmount),1,timeline,1,1);
-        // uint step_2=pow_ratio(step_1,1,1,timeline)-1;
-        // return step_2;
-
-        return 456;
->>>>>>> Stashed changes
     }
 
     function acceptOfferPartial(
