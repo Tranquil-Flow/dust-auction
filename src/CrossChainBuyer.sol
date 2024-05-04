@@ -34,10 +34,14 @@ contract CrossChainBuyer is OwnerIsCreator {
 
     IRouterClient private s_router;
 
+    IERC20 private s_linkToken;
+
     /// @notice Constructor initializes the contract with the router address.
     /// @param _router The address of the router contract.
-    constructor(address _router) {
+    /// @param _link The address of the link contract.
+    constructor(address _router, address _link) {
         s_router = IRouterClient(_router);
+        s_linkToken = IERC20(_link);
     }
 
     /// @dev Modifier that checks the receiver address is not 0.
@@ -67,16 +71,17 @@ contract CrossChainBuyer is OwnerIsCreator {
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.
-    /// @notice Pay in native gas such as ETH on Ethereum or MATIC on Polgon.
+    /// @notice pay in LINK.
     /// @notice the token must be in the list of supported tokens.
     /// @notice This function can only be called by the owner.
-    /// @dev Assumes your contract has sufficient native gas like ETH on Ethereum or MATIC on Polygon.
+    /// @dev Assumes your contract has sufficient LINK tokens to pay for the fees.
     /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
     /// @param _receiver The address of the recipient on the destination blockchain.
+    /// @param _offerId The offerID of the offer being accepted on the destination blockchain.
     /// @param _token token address.
     /// @param _amount token amount.
     /// @return messageId The ID of the message that was sent.
-    function transferTokensPayNative(
+    function transferTokensPayLINK(
         uint64 _destinationChainSelector,
         address _receiver,
         uint _offerId,
@@ -90,13 +95,13 @@ contract CrossChainBuyer is OwnerIsCreator {
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        // address(0) means fees are paid in native gas
+        //  address(linkToken) means fees are paid in LINK
         Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
             _receiver,
             _offerId,
             _token,
             _amount,
-            address(0)
+            address(s_linkToken)
         );
 
         // Get the fee required to send the message
@@ -105,15 +110,21 @@ contract CrossChainBuyer is OwnerIsCreator {
             evm2AnyMessage
         );
 
-        if (fees > address(this).balance)
-            revert NotEnoughBalance(address(this).balance, fees);
-
         // Transfer tokens to contract
-        bool transferSuccess = IERC20(_token).transferFrom(msg.sender, address(this), _amount);	
-        if (!transferSuccess) {revert TokenTransferFailed();} 
+        bool transferSuccess = IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        if (!transferSuccess) {revert TokenTransferFailed();}
+
+        if (fees > s_linkToken.balanceOf(address(this)))
+            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+
+        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+        s_linkToken.approve(address(s_router), fees);
+
+        // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
+        IERC20(_token).approve(address(s_router), _amount);
 
         // Send the message through the router and store the returned message ID
-        messageId = s_router.ccipSend{value: fees}(
+        messageId = s_router.ccipSend(
             _destinationChainSelector,
             evm2AnyMessage
         );
@@ -125,7 +136,7 @@ contract CrossChainBuyer is OwnerIsCreator {
             _receiver,
             _token,
             _amount,
-            address(0),
+            address(s_linkToken),
             fees
         );
 

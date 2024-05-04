@@ -50,20 +50,44 @@ or
 
 
 ## Deployment Steps
-
-forge create --rpc-url https://eth-sepolia.g.alchemy.com/v2/demo --etherscan-api-key WY4F1JEZT6T364HA9N7R8SANWEEMVY6AP3 --verify --private-key 40a34044ea92d36d393a4b476bb29f4fa09e1f8f0d8707a354df94a0bcbca3ab src DustAuction.sol:DustAuction
-
-
-- Deploy DustAuction.sol
 - Deploy CrossChainBuyer.sol
-- Fund both contracts with LINK
-- Call `allowlistDestinationChain` with CCIP supported chains
+   - Call `allowlistDestinationChain`, inputting Chain Selectors for other CCIP chains
+   - Transfer LINK to DustAuction to fund transfers
+
+- Deploy DustAuction.sol on CCIP chains
+   - Call `allowListDestinationAndSourceChain`, inputting Chain Selectors for other CCIP chains
+   - Call `allowListSender`, inputting the contract address of DustAuction.sol for all deployed instances
+   - Transfer LINK to DustAuction to fund transfers
+
+Chain Selectors
+- Fuji -> Sepolia Eth: 16015286601757825753
+- Fuji -> Sepolia Base: 10344971235874465080
+
+- Sepolia Eth -> Fuji: 14767482510784806043
+- Sepolia Eth -> Sepolia Base: 10344971235874465080
+
+- Sepolia Base -> Fuji: 14767482510784806043
+- Sepolia Base -> Sepolia: 16015286601757825753
 
 ChainIDs
+- Avalanche Fuji: `43113`
 - Ethereum Sepolia: `11155111`
 - Base Sepolia: `84532`
-- Avalanche Fuji: `43113`
-- BNB Smartchain Testnet: `97`
+
+Router
+- Fuji: `0xF694E193200268f9a4868e4Aa017A0118C9a8177`
+- Ethereum Sepolia: `0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59`
+- Base Sepolia: `0xD3b06cEbF099CE7DA4AcCf578aaebFDBd6e88a93`
+
+LINK
+- Fuji: `0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846`
+- Sepolia Eth: `0x779877A7B0D9E8603169DdbD7836e478b4624789`
+- Sepolia Base: `0xE4aB69C077896252FAFBD49EFD26B5D171A32410`
+
+USDC
+- Fuji: `0x5425890298aed601595a70AB815c96711a31Bc65`
+- Sepolia Eth: `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
+- Sepolia Base: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
 
 ## CCIP Supported Deployments
 ### Ethereum Sepolia
@@ -78,18 +102,15 @@ ChainIDs
 - DustAuction:
 - CrossChainBuyer:
 
-### BNB Smartchain Testnet Testnet
-- DustAuction:
-- CrossChainBuyer:
-
 ## Non-CCIP Supported Deployments
 ### Mantle Sepolia Testnet
 - DustAuction:
-- CrossChainBuyer:
 
 ### Avail Goldberg Testnet
 - DustAuction:
-- CrossChainBuyer:
+
+### Polygon zkEVM Cardona Testnet
+- DustAuction:
 
 ## Acknowledgements
 [Marcus Wentz](https://github.com/MarcusWentz) for their mentoring & [Front End Template](https://github.com/MarcusWentz/Web3_Get_Set_Contract_Metamask)
