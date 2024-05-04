@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.20;
 
-import "MathLibraryIntegral.sol";
+import "./MathLibraryIntegral.sol";
 
 contract AnalyticMath {
     uint8 internal constant MIN_PRECISION = 32;
