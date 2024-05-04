@@ -92,13 +92,17 @@ contract DustAuction is ReentrancyGuard {
     }
 
     // Given an input asset amount, returns the output amount of the other asset at current time.
-    function getAmountOut(uint offerID, uint inputAmount) public returns (uint) {
-
+    function getAmountOut(uint offerID, uint inputAmount,uint timeline) public returns (uint outAmount) {
+        step_1=2-pow((1+inputAmount),1,timeline,1,1);
+        step_2=pow(step_1,1,1,timeline)-1;
+        return step_2;
     }
 
     // Returns the input amount required to buy the given output asset amount at current time.
-    function getAmountIn(uint offerID) public returns (uint) {
-
+    function getAmountIn(uint offerID) public returns (uint inAmount) {
+        step_1=2-pow((1+inputAmount),1,timeline,1,1);
+        step_2=pow(step_1,1,1,timeline)-1;
+        return step_2;
     }
 
     function acceptOfferPartial(
