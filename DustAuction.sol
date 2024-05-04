@@ -22,13 +22,41 @@ contract DustAuction is ReentrancyGuard {
         address seller;
         address tokenSelling;
         uint tokenAmount;
-        uint tradeOfferStartTime;
+        uint offerStartTime;
         uint timeline;
         bool offerOpen;
     }
 
     Offer[] public offers;
 
+    // Events
+    event OfferMade(
+        uint offerID,
+        address seller,
+        address indexed tokenSelling,
+        uint sellTokenAmount,
+        uint offerStartTime,
+        uint timeline
+    );
+    event OfferAcceptedPartial(
+        uint offerID,
+        address buyer,
+        address indexed tokenSelling,
+        uint sellTokenAmount,
+        address tokenBuying,
+        uint buyTokenAmount,
+        uint timeBought
+    );
+    event OfferAccepted(
+        uint offerID,
+        address buyer,
+        address indexed tokenSelling,
+        uint sellTokenAmount,
+        address tokenBuying,
+        uint buyTokenAmount,
+        uint timeBought
+    );
+    event OfferCancelled(uint offerID);
 
     /**
     * @notice Make an offer to sell an asset.
@@ -58,6 +86,9 @@ contract DustAuction is ReentrancyGuard {
         offers.push(Offer(offers.length, msg.sender, tokenSelling, tokenAmount, block.timestamp, timeline, true));
 
         return offers.length - 1;
+
+        emit OfferMade(offers.length - 1, msg.sender, tokenSelling, tokenAmount, block.timestamp, timeline);
+        
     }
 
     // Given an input asset amount, returns the output amount of the other asset at current time.
@@ -89,6 +120,8 @@ contract DustAuction is ReentrancyGuard {
         // Transfer tokens to buyer
         IERC20(offers[offerID].tokenSelling).transfer(msg.sender, amountReceived);
 
+        emit OfferAcceptedPartial(offerID, msg.sender, offers[offerID].tokenSelling, amountReceived, offers[offerID].tokenBuying, inputAmount, block.timestamp);
+
     }
 
     function acceptOfferFull(
@@ -108,6 +141,8 @@ contract DustAuction is ReentrancyGuard {
         // Transfer tokens to buyer
         IERC20(offers[offerID].tokenSelling).transfer(msg.sender, offers[offerID].tokenAmount);
 
+        emit OfferAccepted(offerID, msg.sender, offers[offerID].tokenSelling, offers[offerID].tokenAmount, offers[offerID].tokenBuying, amountNeeded, block.timestamp);
+
     }
 
     function cancelOffer(
@@ -122,6 +157,8 @@ contract DustAuction is ReentrancyGuard {
         // Transfer tokens back to seller
         bool transferSuccess = IERC20(offers[offerID].tokenSelling).transfer(offers[offerID].seller, offers[offerID].tokenAmount);
         if (!transferSuccess) {revert TokenTransferFailed();}
+
+        emit OfferCancelled(offerID);
     }
 
 }
