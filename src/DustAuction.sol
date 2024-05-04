@@ -7,9 +7,9 @@ import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.s
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./MathLibrary.sol";
-import "./dsmath.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {AnalyticMath} from "./MathLibrary.sol";
+import {DSMath} from "./dsmath.sol";
 
 //TODO: Cleanup variable names to be unique
 //TODO: Natspec
@@ -166,17 +166,19 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
     }
 
     // Given an input asset amount, returns the output amount of the other asset at current time.
-    function getAmountOut(uint offerID, uint inputAmount,uint timeline) public returns (uint outAmount) {
-        uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
-        uint step_2=pow_ratio(step_1,1,1,timeline);
-        return step_2;
+    function getAmountOut(uint offerID, uint inputAmount, uint timeline) public returns (uint outAmount) {
+        // uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
+        // uint step_2=pow_ratio(step_1,1,1,timeline);
+        // return step_2;
+        return 123;
     }
 
     // Returns the input amount required to buy the given output asset amount at current time.
-    function getAmountIn(uint offerID, uint inputAmount,uint timeline) public returns (uint inAmount) {
-        uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
-        uint step_2=pow_ratio(step_1,1,1,timeline);
-        return step_2;
+    function getAmountIn(uint offerID, uint inputAmount, uint timeline) public returns (uint inAmount) {
+        // uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
+        // uint step_2=pow_ratio(step_1,1,1,timeline);
+        // return step_2;
+        return 456;
     }
 
     function acceptOfferPartial(
@@ -187,7 +189,7 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         if (inputAmount <= 0) {revert InvalidTokenAmount(inputAmount);}
 
         // Check the amount of tokens the buyer will receive for inputAmount and at current time
-        uint amountReceived = getAmountOut(offerID, inputAmount);
+        uint amountReceived = getAmountOut(offerID, inputAmount, offers[offerID].timeline);
 
         // Update the offer
         offers[offerID].sellAmount -= amountReceived;
@@ -208,7 +210,7 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         if (offers[offerID].offerOpen == false) {revert OfferInvalid();}
 
         // Check the amount of tokens needed to buy the offer at current time
-        uint amountNeeded = getAmountIn(offerID);
+        uint amountNeeded = getAmountIn(offerID, 0, offers[offerID].timeline);  //FIX
 
         // Close the offer
         offers[offerID].offerOpen = false;
@@ -281,17 +283,6 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         acceptOfferFullCrossChain(decodedOfferId, buyToken, buyAmount, buyer, callerChain);
     }
 
-    /// @dev Updates the allowlist status of a source chain
-    /// @notice This function can only be called by the owner.
-    /// @param _sourceChainSelector The selector of the source chain to be updated.
-    /// @param allowed The allowlist status to be set for the source chain.
-    function allowlistSourceChain(
-        uint64 _sourceChainSelector,
-        bool allowed
-    ) external onlyOwner {
-        allowlistedSourceChains[_sourceChainSelector] = allowed;
-    }
-
     /// @dev Updates the allowlist status of a sender for transactions.
     /// @notice This function can only be called by the owner.
     /// @param _sender The address of the sender to be updated.
@@ -300,15 +291,16 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         allowlistedSenders[_sender] = allowed;
     }
 
-    /// @dev Updates the allowlist status of a destination chain for transactions.
+    /// @dev Updates the allowlist status of a destination & source chain for transactions.
     /// @notice This function can only be called by the owner.
-    /// @param _destinationChainSelector The selector of the destination chain to be updated.
+    /// @param _chainSelector The selector of the destination & source chain to be updated.
     /// @param allowed The allowlist status to be set for the destination chain.
-    function allowlistDestinationChain(
-        uint64 _destinationChainSelector,
+    function allowlistDestinationAndSourceChain(
+        uint64 _chainSelector,
         bool allowed
     ) external onlyOwner {
-        allowlistedDestinationChains[_destinationChainSelector] = allowed;
+        allowlistedDestinationChains[_chainSelector] = allowed;
+        allowlistedSourceChains[_chainSelector] = allowed;
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.

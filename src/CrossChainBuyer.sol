@@ -6,7 +6,7 @@ import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/O
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./dsmath.sol";
+import {DSMath} from "./dsmath.sol";
 
 /// @title - A contract for accepting Dust Auction offers on another chain.
 contract CrossChainBuyer is OwnerIsCreator {
@@ -16,6 +16,7 @@ contract CrossChainBuyer is OwnerIsCreator {
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance to cover the fees.
     error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been allowlisted by the contract owner.
     error InvalidReceiverAddress(); // Used when the receiver address is 0.
+    error TokenTransferFailed();
 
     // Event emitted when a message is sent to another chain.
     event TokensTransferred(
@@ -29,7 +30,7 @@ contract CrossChainBuyer is OwnerIsCreator {
     );
 
     // Mapping to keep track of allowlisted destination chains.
-    mapping(uint64 => bool) public allowlistedChains;
+    mapping(uint64 => bool) public allowlistedDestinationChains;
 
     IRouterClient private s_router;
 
@@ -53,9 +54,20 @@ contract CrossChainBuyer is OwnerIsCreator {
     /// @dev Modifier that checks if the chain with the given destinationChainSelector is allowlisted.
     /// @param _destinationChainSelector The selector of the destination chain.
     modifier onlyAllowlistedChain(uint64 _destinationChainSelector) {
-        if (!allowlistedChains[_destinationChainSelector])
+        if (!allowlistedDestinationChains[_destinationChainSelector])
             revert DestinationChainNotAllowlisted(_destinationChainSelector);
         _;
+    }
+
+    /// @dev Updates the allowlist status of a destination chain for transactions.
+    /// @notice This function can only be called by the owner.
+    /// @param _destinationChainSelector The selector of the destination chain to be updated.
+    /// @param allowed The allowlist status to be set for the destination chain.
+    function allowlistDestinationChain(
+        uint64 _destinationChainSelector,
+        bool allowed
+    ) external onlyOwner {
+        allowlistedDestinationChains[_destinationChainSelector] = allowed;
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.
@@ -65,6 +77,7 @@ contract CrossChainBuyer is OwnerIsCreator {
     /// @dev Assumes your contract has sufficient LINK tokens to pay for the fees.
     /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
     /// @param _receiver The address of the recipient on the destination blockchain.
+    /// @param _offerId The offerID of the offer being accepted on the destination blockchain.
     /// @param _token token address.
     /// @param _amount token amount.
     /// @return messageId The ID of the message that was sent.
@@ -96,6 +109,10 @@ contract CrossChainBuyer is OwnerIsCreator {
             _destinationChainSelector,
             evm2AnyMessage
         );
+
+        // Transfer tokens to contract
+        bool transferSuccess = IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        if (!transferSuccess) {revert TokenTransferFailed();}
 
         if (fees > s_linkToken.balanceOf(address(this)))
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
