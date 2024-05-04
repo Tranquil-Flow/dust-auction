@@ -26,8 +26,44 @@ CCIP purchase of toxic asset:
 <img width="841" alt="Screenshot 2024-05-04 at 12 47 01 AM" src="https://github.com/Tranquil-Flow/dust-auction/assets/11951513/ebf46210-c824-465e-91db-09e8ce1cb55e">
 
 
-Future plans - slippage and partial fill from CCIP.
+## Future Plans
+- Slippage options
+- Partial fill offers when using CCIP
+- Refund CCIP users when overpaying due to latency from confirmation time affecting n
 
 Insert X, and  insert the willing to accept Y> or more amount of sheep.
 
 
+## Deployment Steps
+- Deploy DustAuction.sol
+- Deploy CrossChainBuyer.sol
+- Fund both contracts with LINK
+
+## CCIP Supported Deployments
+### Ethereum Sepolia
+- DustAuction:
+- CrossChainBuyer:
+
+### Base Sepolia Testnet
+- DustAuction:
+- CrossChainBuyer:
+
+### Avalanche Fuji Testnet
+- DustAuction:
+- CrossChainBuyer:
+
+### BNB Smartchain Testnet Testnet
+- DustAuction:
+- CrossChainBuyer:
+
+## Non-CCIP Supported Deployments
+### Mantle Sepolia Testnet
+- DustAuction:
+- CrossChainBuyer:
+
+### Avail Goldberg Testnet
+- DustAuction:
+- CrossChainBuyer:
+
+## Acknowledgements
+[Marcus Wentz](https://github.com/MarcusWentz) for their mentoring & [Front End Template](https://github.com/MarcusWentz/Web3_Get_Set_Contract_Metamask)
