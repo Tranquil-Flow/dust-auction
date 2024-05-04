@@ -177,8 +177,8 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
 
     // Returns the input amount required to buy the given output asset amount at current time.
     function getAmountIn(uint offerID, uint inputAmount,uint timeline) public returns (uint inAmount) {
-        uint step_1=2-pow_ratio((1+inputAmount),1,timeline,1,1);
-        uint step_2=pow_ratio(step_1,1,1,timeline)-1;
+        uint step_1=2-pow_ratio((inputAmount),1,timeline,1,1);
+        uint step_2=pow_ratio(step_1,1,1,timeline);
         return step_2;
     }
 
