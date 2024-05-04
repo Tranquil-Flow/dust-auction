@@ -2,6 +2,7 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "MathLibrary.sol";
 
 //TODO: Cleanup variable names to be unique
 //TODO: Natspec
