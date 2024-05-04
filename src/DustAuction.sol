@@ -248,7 +248,10 @@ contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
         address buyer,
         uint64 destinationChain
     ) public nonReentrant {
-        if (offers[offerID].offerOpen == false) {revert OfferInvalid();} // Fix to send back tokens if offer invalid
+        if (offers[offerID].offerOpen == false) {
+            transferTokensPayLINK(_destinationChainSelector, _receiver, _token, _amount);
+        } // Fix to send back tokens if offer invalid
+
 
         // Close the offer
         offers[offerID].offerOpen = false;
