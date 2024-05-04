@@ -6,6 +6,34 @@ detectMetamaskInstalled() //When the page is opened check for error handling iss
 let accounts = []; ////Empty array to be filled once Metamask is called.
 document.getElementById("enableEthereumButton").innerHTML =  "Connect Metamask 🦊"
 document.getElementById("getValueStateSmartContract").innerHTML =  "Loading..."
+document.getElementById('makeOfferButton').addEventListener('click', async () => {
+  // Get the values from the input fields
+  let tokenSelling = document.getElementById('tokenSelling').value;
+  let tokenBuying = document.getElementById('tokenBuying').value;
+  let sellAmount = ethers.utils.parseUnits(document.getElementById('sellAmount').value, "ether");
+  let timeline = document.getElementById('timeline').value;
+
+  // The address of the DustAuction contract
+  let contractAddress = "your_contract_address_here";
+
+  // The ABI of the DustAuction contract
+  let contractABI = [
+    // Add the rest of your contract's ABI here
+    "function makeOffer(address tokenSelling, address tokenBuying, uint sellAmount, uint timeline) external"
+  ];
+
+  // Create a contract instance
+  let contract = new ethers.Contract(contractAddress, contractABI, provider.getSigner());
+
+  // Call the makeOffer function
+  contract.makeOffer(tokenSelling, tokenBuying, sellAmount, timeline)
+    .then((transaction) => {
+      console.log("Transaction:", transaction);
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+    });
+});
 
 const sepoliaChainId = 11155111;
 
@@ -13,7 +41,7 @@ const provider = new ethers.providers.Web3Provider(window.ethereum); //Imported 
 
 // const signer = provider.getSigner(); //Do this when the user clicks "enableEthereumButton" which will call getAccount() to get the signer private key for the provider.  
  
-const contractAddress_JS = '0xBBE97Afb978E19033e0BDa692E6034F5b3B91312'
+const contractAddress_JS = '0x023C104b2bE3C6b608f22B8431C7B7FBA43c66e5'
 const contractABI_JS = [{"anonymous":false,"inputs":[],"name":"setEvent","type":"event"},{"inputs":[{"internalType":"uint256","name":"x","type":"uint256"}],"name":"set","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"storedData","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 
 const contractDefined_JS = new ethers.Contract(contractAddress_JS, contractABI_JS, provider);

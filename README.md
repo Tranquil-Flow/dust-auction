@@ -33,11 +33,37 @@ CCIP purchase of toxic asset:
 
 Insert X, and  insert the willing to accept Y> or more amount of sheep.
 
+## Front End Initialize
+Run locally for testing with:
+
+⚠️ Node.js version v16.14.2 is recommended to avoid errors running the website locally. ⚠️
+
+   `npm install http-server`
+
+then
+
+   `npx http-server`
+
+or
+
+   `http-server`
+
 
 ## Deployment Steps
+
+forge create --rpc-url https://eth-sepolia.g.alchemy.com/v2/demo --etherscan-api-key WY4F1JEZT6T364HA9N7R8SANWEEMVY6AP3 --verify --private-key 40a34044ea92d36d393a4b476bb29f4fa09e1f8f0d8707a354df94a0bcbca3ab src DustAuction.sol:DustAuction
+
+
 - Deploy DustAuction.sol
 - Deploy CrossChainBuyer.sol
 - Fund both contracts with LINK
+- Call `allowlistDestinationChain` with CCIP supported chains
+
+ChainIDs
+- Ethereum Sepolia: `11155111`
+- Base Sepolia: `84532`
+- Avalanche Fuji: `43113`
+- BNB Smartchain Testnet: `97`
 
 ## CCIP Supported Deployments
 ### Ethereum Sepolia

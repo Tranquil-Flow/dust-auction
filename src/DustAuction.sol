@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -14,13 +15,12 @@ import "./dsmath.sol";
 //TODO: Natspec
 //TODO: Rename old Chainlink variables to be more relevant to protocol
 
-contract DustAuction is ReentrancyGuard, OwnerIsCreator {
+contract DustAuction is CCIPReceiver, ReentrancyGuard, OwnerIsCreator {
     using SafeERC20 for IERC20;
 
     // Errors
     error InvalidTokenAmount(uint256 amount);
     error InvalidTokenAddress(address addr);
-    error TokenApprovalFailed();
     error TokenTransferFailed();
     error OfferInvalid();
     error NotOwnerOfOffer();
@@ -46,11 +46,13 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
 
     Offer[] public offers;
 
-    mapping(uint64 => bool) public allowlistedChains;
-    IRouterClient private s_router;
-    IERC20 private s_linkToken;
+    IRouterClient private s_router = IRouterClient(0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59);
+    IERC20 private s_linkToken = IERC20(0x779877A7B0D9E8603169DdbD7836e478b4624789);
 
-        // Mapping to keep track of allowlisted source chains.
+    // Mapping to keep track of allowlisted destination chains.
+    mapping(uint64 => bool) public allowlistedDestinationChains;
+
+    // Mapping to keep track of allowlisted source chains.
     mapping(uint64 => bool) public allowlistedSourceChains;
 
     // Mapping to keep track of allowlisted senders.
@@ -107,15 +109,14 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
     /// @notice Constructor initializes the contract with the router address.
     /// @param _router The address of the router contract.
     /// @param _link The address of the link contract.
-    constructor(address _router, address _link) {
-        s_router = IRouterClient(_router);
+    constructor(address _router, address _link) CCIPReceiver(_router) {
         s_linkToken = IERC20(_link);
     }
 
     /// @dev Modifier that checks if the chain with the given destinationChainSelector is allowlisted.
     /// @param _destinationChainSelector The selector of the destination chain.
     modifier onlyAllowlistedChain(uint64 _destinationChainSelector) {
-        if (!allowlistedChains[_destinationChainSelector])
+        if (!allowlistedDestinationChains[_destinationChainSelector])
             revert DestinationChainNotAllowlisted(_destinationChainSelector);
         _;
     }
@@ -154,10 +155,6 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
         if (sellAmount <= 0) {revert InvalidTokenAmount(sellAmount);}
         if (tokenSelling == address(0)) {revert InvalidTokenAddress(tokenSelling);}
 
-        // Approve the contract to spend the tokens
-        bool approvalSuccess = IERC20(tokenSelling).approve(address(this), sellAmount);
-        if (!approvalSuccess) {revert TokenApprovalFailed();}
-
         // Transfer tokens to contract
         bool transferSuccess = IERC20(tokenSelling).transferFrom(msg.sender, address(this), sellAmount);
         if (!transferSuccess) {revert TokenTransferFailed();}
@@ -169,6 +166,7 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
     }
 
     // Given an input asset amount, returns the output amount of the other asset at current time.
+<<<<<<< Updated upstream
     function getAmountOut(uint offerID, uint inputAmount,uint timeline) public returns (uint outAmount) {
         
         uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
@@ -181,6 +179,23 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
         uint step_1=(2*(10 ** 27))-rdiv(pow_ratio((inputAmount),1,timeline,1,1),(10**27));
         uint step_2=pow_ratio(step_1,1,1,timeline);
         return step_2;
+=======
+    function getAmountOut(uint offerID, uint inputAmount) public returns (uint outAmount) {
+
+        // uint step_1=200000-pow_ratio((100000+inputAmount),1,timeline,1,1);
+        // uint step_2=pow_ratio(step_1,1,1,timeline)-1;
+        // return step_2;
+        return 123;
+    }
+
+    // Returns the input amount required to buy the given output asset amount at current time.
+    function getAmountIn(uint offerID) public returns (uint inAmount) {
+        // uint step_1=200000-pow_ratio((100000+inputAmount),1,timeline,1,1);
+        // uint step_2=pow_ratio(step_1,1,1,timeline)-1;
+        // return step_2;
+
+        return 456;
+>>>>>>> Stashed changes
     }
 
     function acceptOfferPartial(
@@ -268,7 +283,7 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
     function _ccipReceive(
         Client.Any2EVMMessage memory any2EvmMessage
     )
-        internal
+        internal override
         onlyAllowlisted(
             any2EvmMessage.sourceChainSelector,
             abi.decode(any2EvmMessage.sender, (address))
@@ -285,6 +300,25 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
         acceptOfferFullCrossChain(decodedOfferId, buyToken, buyAmount, buyer, callerChain);
     }
 
+    /// @dev Updates the allowlist status of a source chain
+    /// @notice This function can only be called by the owner.
+    /// @param _sourceChainSelector The selector of the source chain to be updated.
+    /// @param allowed The allowlist status to be set for the source chain.
+    function allowlistSourceChain(
+        uint64 _sourceChainSelector,
+        bool allowed
+    ) external onlyOwner {
+        allowlistedSourceChains[_sourceChainSelector] = allowed;
+    }
+
+    /// @dev Updates the allowlist status of a sender for transactions.
+    /// @notice This function can only be called by the owner.
+    /// @param _sender The address of the sender to be updated.
+    /// @param allowed The allowlist status to be set for the sender.
+    function allowlistSender(address _sender, bool allowed) external onlyOwner {
+        allowlistedSenders[_sender] = allowed;
+    }
+
     /// @dev Updates the allowlist status of a destination chain for transactions.
     /// @notice This function can only be called by the owner.
     /// @param _destinationChainSelector The selector of the destination chain to be updated.
@@ -293,7 +327,7 @@ contract DustAuction is ReentrancyGuard, OwnerIsCreator {
         uint64 _destinationChainSelector,
         bool allowed
     ) external onlyOwner {
-        allowlistedChains[_destinationChainSelector] = allowed;
+        allowlistedDestinationChains[_destinationChainSelector] = allowed;
     }
 
     /// @notice Transfer tokens to receiver on the destination chain.
